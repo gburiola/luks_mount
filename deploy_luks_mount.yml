@@ -1,0 +1,38 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Check required packages are installed
+      package: state=present name={{ item }}
+      with_items:
+        - cryptsetup
+        - jq
+
+    - name: Upload script to remote server
+      copy:
+        src: luks_mount.sh
+        dest: /usr/sbin/luks_mount.sh
+        owner: root
+        group: root
+        mode: 0544
+
+    - name: Upload script config file to remote server
+      copy:
+        src: luks_mount.conf
+        dest: /etc/luks_mount.conf
+        owner: root
+        group: root
+        mode: 0400
+
+    - name: Upload systemd init script
+      copy:
+        src: luks_mount.service
+        dest: /etc/systemd/system/luks_mount.service
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Enable new systemd service
+      service:
+        name: luks_mount
+        enabled: yes

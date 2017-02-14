@@ -7,7 +7,7 @@ set -u
 set -o pipefail
 
 # Load config file and set variables
-source /root/luks_mount.conf
+source /etc/luks_mount.conf
 CURL_CMD="curl -s -H X-Vault-Token:$VAULT_TOKEN"
 
 # Get a list of all luks devices on the system
@@ -24,11 +24,11 @@ echo "Luks devices are: $LUKS_DEVICES"
 for DEV in $LUKS_DEVICES; do
 
     # Get luks key
-    LUKS_KEY=$($CURL_CMD -X GET ${VAULT_ADDR}/v1/secret/server1/luks_${DEV} | jq -r .data.value)
+    LUKS_KEY=$($CURL_CMD -X GET ${VAULT_ADDR}/v1/secret/$HOSTNAME/luks_${DEV} | jq -r .data.value)
     if [[ $? -eq 0 ]]; then
         echo "Succesfully retrieved keys for $DEV"
     else
-        echo "Failed to retrieve key for $DEV. Exitting..."
+        echo "Failed to retrieve key for $DEV. Exiting..."
         exit 1
     fi
 
@@ -37,7 +37,7 @@ for DEV in $LUKS_DEVICES; do
     if [[ $? -eq 0 ]]; then
         echo "Succesfully decrypted volume $DEV"
     else
-        echo "Failed to decrypt volume $DEV. Exitting..."
+        echo "Failed to decrypt volume $DEV. Exiting..."
         exit 1
     fi
 
